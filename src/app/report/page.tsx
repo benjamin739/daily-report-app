@@ -65,9 +65,7 @@ interface FormData {
   date: string;
   projectName: string;
   status: string;
-  office: string;
   activity: string;
-  activityOnSite: string;
   tools: string;
   tomorrowsGoal: string;
   unforeseen: string;
@@ -94,9 +92,7 @@ export default function ReportPage() {
     date: new Date().toISOString().split("T")[0],
     projectName: "",
     status: "",
-    office: "",
     activity: "",
-    activityOnSite: "",
     tools: "",
     tomorrowsGoal: "",
     unforeseen: "",
@@ -281,10 +277,6 @@ export default function ReportPage() {
             </select>
           </div>
 
-          <div>
-            <label className={labelClass}>Office</label>
-            <input type="text" name="office" value={form.office} onChange={handleChange} placeholder="Office / Division" className={inputClass} />
-          </div>
         </div>
 
         {/* Activities */}
@@ -294,11 +286,6 @@ export default function ReportPage() {
           <div>
             <label className={labelClass}>Activity</label>
             <textarea name="activity" value={form.activity} onChange={handleChange} rows={3} placeholder="Describe today's activity..." className={inputClass} />
-          </div>
-
-          <div>
-            <label className={labelClass}>Activity on Site</label>
-            <textarea name="activityOnSite" value={form.activityOnSite} onChange={handleChange} rows={3} placeholder="What was done on site today?" className={inputClass} />
           </div>
 
           <div>

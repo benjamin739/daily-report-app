@@ -10,9 +10,7 @@ export interface DailyReportData {
   date: string;
   projectName: string;
   status: string;
-  office: string;
   activity: string;
-  activityOnSite: string;
   foremanName: string;
   workersNames: string;
   workersHours: string;
@@ -81,14 +79,8 @@ export async function createDailyReport(data: DailyReportData) {
       Status: {
         select: { name: data.status },
       },
-      Office: {
-        rich_text: [{ text: { content: data.office } }],
-      },
       Activity: {
         rich_text: [{ text: { content: data.activity } }],
-      },
-      "Activity on Site": {
-        rich_text: [{ text: { content: data.activityOnSite } }],
       },
       "Foreman Name": {
         rich_text: [{ text: { content: data.foremanName } }],
