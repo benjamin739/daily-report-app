@@ -309,7 +309,7 @@ export default function ReportPage() {
             >
               + Add Photos
             </button>
-            <input ref={picturesRef} type="file" accept="image/*" multiple capture="environment" onChange={handlePicturesChange} className="hidden" />
+            <input ref={picturesRef} type="file" accept="image/*" multiple onChange={handlePicturesChange} className="hidden" />
             {picturesPreviews.length > 0 && (
               <div className="grid grid-cols-3 gap-2 mt-3">
                 {picturesPreviews.map((src, i) => (
@@ -338,7 +338,7 @@ export default function ReportPage() {
             >
               {signSheetPreview ? "Replace Sign Sheet Photo" : "+ Take Photo of Sign Sheet"}
             </button>
-            <input ref={signSheetRef} type="file" accept="image/*" capture="environment" onChange={handleSignSheetChange} className="hidden" />
+            <input ref={signSheetRef} type="file" accept="image/*" onChange={handleSignSheetChange} className="hidden" />
             {signSheetPreview && (
               <div className="mt-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
