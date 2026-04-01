@@ -1,7 +1,26 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+
+const TIME_OPTIONS = (() => {
+  const options: string[] = [];
+  for (let h = 5; h <= 20; h++) {
+    ["00", "30"].forEach((m) => {
+      if (h === 20 && m === "30") return;
+      const ampm = h < 12 ? "AM" : "PM";
+      const hour = h <= 12 ? h : h - 12;
+      options.push(`${hour}:${m} ${ampm}`);
+    });
+  }
+  return options;
+})();
+
+interface WorkerEntry {
+  name: string;
+  startTime: string;
+  endTime: string;
+}
 
 const PROJECTS = [
   "Will Roberts - ADU Renovation 2025",
@@ -49,8 +68,6 @@ interface FormData {
   office: string;
   activity: string;
   activityOnSite: string;
-  workersNames: string;
-  workersHours: string;
   tools: string;
   tomorrowsGoal: string;
   unforeseen: string;
@@ -69,6 +86,9 @@ export default function ReportPage() {
   const [error, setError] = useState("");
   const picturesRef = useRef<HTMLInputElement>(null);
   const signSheetRef = useRef<HTMLInputElement>(null);
+  const [workers, setWorkers] = useState<WorkerEntry[]>([
+    { name: "", startTime: "7:00 AM", endTime: "3:30 PM" },
+  ]);
 
   const [form, setForm] = useState<FormData>({
     date: new Date().toISOString().split("T")[0],
@@ -77,8 +97,6 @@ export default function ReportPage() {
     office: "",
     activity: "",
     activityOnSite: "",
-    workersNames: "",
-    workersHours: "",
     tools: "",
     tomorrowsGoal: "",
     unforeseen: "",
@@ -106,6 +124,33 @@ export default function ReportPage() {
         ? target.checked
         : target.value;
     setForm((prev) => ({ ...prev, [target.name]: value }));
+  }
+
+  const calcHours = useCallback((start: string, end: string): string => {
+    const toMinutes = (t: string) => {
+      const [time, ampm] = t.split(" ");
+      let [h, m] = time.split(":").map(Number);
+      if (ampm === "PM" && h !== 12) h += 12;
+      if (ampm === "AM" && h === 12) h = 0;
+      return h * 60 + m;
+    };
+    const diff = toMinutes(end) - toMinutes(start);
+    if (diff <= 0) return "";
+    const h = Math.floor(diff / 60);
+    const m = diff % 60;
+    return m === 0 ? `${h}h` : `${h}h ${m}m`;
+  }, []);
+
+  function updateWorker(index: number, field: keyof WorkerEntry, value: string) {
+    setWorkers((prev) => prev.map((w, i) => i === index ? { ...w, [field]: value } : w));
+  }
+
+  function addWorker() {
+    setWorkers((prev) => [...prev, { name: "", startTime: "7:00 AM", endTime: "3:30 PM" }]);
+  }
+
+  function removeWorker(index: number) {
+    setWorkers((prev) => prev.filter((_, i) => i !== index));
   }
 
   function handlePicturesChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -154,10 +199,19 @@ export default function ReportPage() {
         signSheetUrl = data.url;
       }
 
+      const workersNames = workers.filter((w) => w.name.trim()).map((w) => w.name.trim()).join("\n");
+      const workersHours = workers
+        .filter((w) => w.name.trim())
+        .map((w) => {
+          const hours = calcHours(w.startTime, w.endTime);
+          return `${w.name.trim()} — ${w.startTime} to ${w.endTime}${hours ? ` (${hours})` : ""}`;
+        })
+        .join("\n");
+
       const res = await fetch("/api/submit-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, foremanName, foremanEmail, pictureUrls, signSheetUrl }),
+        body: JSON.stringify({ ...form, workersNames, workersHours, foremanName, foremanEmail, pictureUrls, signSheetUrl }),
       });
 
       const data = await res.json();
@@ -256,15 +310,67 @@ export default function ReportPage() {
         <div className={sectionClass}>
           <h2 className="font-semibold text-gray-800 text-sm tracking-widest uppercase">Workers</h2>
 
-          <div>
-            <label className={labelClass}>Workers Names</label>
-            <textarea name="workersNames" value={form.workersNames} onChange={handleChange} rows={4} placeholder="One worker per line: John Smith, Mike Johnson" className={inputClass} />
+          <div className="space-y-3">
+            {workers.map((worker, i) => {
+              const hours = calcHours(worker.startTime, worker.endTime);
+              return (
+                <div key={i} className="border border-gray-100 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-400 tracking-widest uppercase">Worker {i + 1}</span>
+                    {workers.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeWorker(i)}
+                        className="text-xs text-gray-400 hover:text-red-500 font-medium"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Worker name"
+                    value={worker.name}
+                    onChange={(e) => updateWorker(i, "name", e.target.value)}
+                    className={inputClass}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">Start Time</label>
+                      <select
+                        value={worker.startTime}
+                        onChange={(e) => updateWorker(i, "startTime", e.target.value)}
+                        className={inputClass}
+                      >
+                        {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">End Time</label>
+                      <select
+                        value={worker.endTime}
+                        onChange={(e) => updateWorker(i, "endTime", e.target.value)}
+                        className={inputClass}
+                      >
+                        {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  {hours && (
+                    <div className="text-xs text-gray-500 font-medium">Total: {hours}</div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
-          <div>
-            <label className={labelClass}>Workers Hours</label>
-            <textarea name="workersHours" value={form.workersHours} onChange={handleChange} rows={4} placeholder="One entry per line: John Smith — 8h" className={inputClass} />
-          </div>
+          <button
+            type="button"
+            onClick={addWorker}
+            className="w-full py-3 border-2 border-dashed border-gray-300 text-gray-500 font-medium hover:border-black hover:text-black transition-colors text-sm mt-1"
+          >
+            + Add Worker
+          </button>
         </div>
 
         {/* Equipment & Notes */}
