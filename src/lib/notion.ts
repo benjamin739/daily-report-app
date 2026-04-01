@@ -25,26 +25,44 @@ export interface DailyReportData {
 }
 
 export async function createDailyReport(data: DailyReportData) {
-  const pictureFiles = data.pictureUrls.map((url) => ({
-    type: "external" as const,
-    name: "Site Photo",
-    external: { url },
-  }));
+  // Build image blocks for page body
+  const imageBlocks: object[] = [];
 
-  const signSheetFiles = data.signSheetUrl
-    ? [
-        {
-          type: "external" as const,
-          name: "Sign Sheet",
-          external: { url: data.signSheetUrl },
-        },
-      ]
-    : [];
+  if (data.pictureUrls.length > 0) {
+    imageBlocks.push({
+      object: "block",
+      type: "heading_2",
+      heading_2: {
+        rich_text: [{ type: "text", text: { content: "Site Photos" } }],
+      },
+    });
+    data.pictureUrls.forEach((url) => {
+      imageBlocks.push({
+        object: "block",
+        type: "image",
+        image: { type: "external", external: { url } },
+      });
+    });
+  }
+
+  if (data.signSheetUrl) {
+    imageBlocks.push({
+      object: "block",
+      type: "heading_2",
+      heading_2: {
+        rich_text: [{ type: "text", text: { content: "Sign Sheet" } }],
+      },
+    });
+    imageBlocks.push({
+      object: "block",
+      type: "image",
+      image: { type: "external", external: { url: data.signSheetUrl } },
+    });
+  }
 
   return notion.pages.create({
     parent: { database_id: DATABASE_ID },
     properties: {
-      // Title field - required by Notion
       Name: {
         title: [
           {
@@ -93,12 +111,9 @@ export async function createDailyReport(data: DailyReportData) {
       "Safety Meeting": {
         checkbox: data.safetyMeeting,
       },
-      Pictures: {
-        files: pictureFiles,
-      },
-      "Sign Sheet": {
-        files: signSheetFiles,
-      },
     },
+    // Photos added as image blocks inside the page body
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    children: imageBlocks as any,
   });
 }
