@@ -129,7 +129,8 @@ export default function ReportPage() {
   const calcHours = useCallback((start: string, end: string): string => {
     const toMinutes = (t: string) => {
       const [time, ampm] = t.split(" ");
-      let [h, m] = time.split(":").map(Number);
+      const [rawH, m] = time.split(":").map(Number);
+      let h = rawH;
       if (ampm === "PM" && h !== 12) h += 12;
       if (ampm === "AM" && h === 12) h = 0;
       return h * 60 + m;
