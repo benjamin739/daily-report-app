@@ -15,10 +15,7 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError("");
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setError("Invalid email or password.");
@@ -38,40 +35,41 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black px-6">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-10">
-          <div className="text-5xl mb-4">⚙️</div>
-          <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
-          <p className="text-gray-400 mt-2">Sign in with your admin account</p>
+        <div className="text-center mb-12">
+          <div className="text-white text-4xl font-serif tracking-widest font-light">ESTATE</div>
+          <div className="text-white text-xs tracking-[0.3em] font-light mt-1">DESIGN &amp; CONSTRUCTION</div>
+          <div className="w-16 h-px bg-white/30 mx-auto mt-6 mb-6" />
+          <p className="text-white/50 text-xs tracking-widest uppercase">Admin Panel</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
+            <label className="block text-xs font-medium text-white/60 mb-2 tracking-widest uppercase">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-xl bg-white/10 text-white placeholder-gray-500 border border-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-              placeholder="admin@company.com"
+              className="w-full px-4 py-3 bg-white/5 text-white placeholder-white/20 border border-white/20 focus:outline-none focus:border-white/60 text-base transition-colors"
+              placeholder="admin@estatedc.com"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Password</label>
+            <label className="block text-xs font-medium text-white/60 mb-2 tracking-widest uppercase">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-xl bg-white/10 text-white placeholder-gray-500 border border-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+              className="w-full px-4 py-3 bg-white/5 text-white placeholder-white/20 border border-white/20 focus:outline-none focus:border-white/60 text-base transition-colors"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-xl text-sm">
+            <div className="border border-red-400/50 text-red-300 px-4 py-3 text-sm">
               {error}
             </div>
           )}
@@ -79,7 +77,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-xl transition-colors text-base"
+            className="w-full py-3 bg-white hover:bg-white/90 disabled:bg-white/50 text-black font-semibold tracking-widest uppercase text-sm transition-colors"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>

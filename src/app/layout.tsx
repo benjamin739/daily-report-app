@@ -5,18 +5,18 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Daily Report",
-  description: "Field daily report app for foremen",
+  title: "EDC Daily Report",
+  description: "Estate Design & Construction daily report app",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Daily Report",
+    title: "EDC",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1e3a5f",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

@@ -1,11 +1,11 @@
 {
-  "name": "Daily Report",
-  "short_name": "Daily Report",
-  "description": "Field daily report app for foremen",
+  "name": "EDC Daily Report",
+  "short_name": "EDC",
+  "description": "Estate Design & Construction daily report app",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1e3a5f",
-  "theme_color": "#1e3a5f",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait",
   "icons": [
     {

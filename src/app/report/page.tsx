@@ -3,6 +3,45 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
+const PROJECTS = [
+  "Will Roberts - ADU Renovation 2025",
+  "West Hollywood - WEHO Plummer Park Dog",
+  "UC Riverside - Library Renovation",
+  "Senior Center Rehabilitation",
+  "Pico Rivera - Council Chambers Upgrades and Accessibility",
+  "Palo Alto - University Underpass Refurbishment",
+  "Orange County - Sanitation Department Control Room Reconfiguration",
+  "New Port - Skylight Screen Installation",
+  "Hollister - Bathroom Remodel at the Community Center",
+  "Fontana - Old Timers Foundation Renovation Project",
+  "Debbie Sobol - Home Remodel",
+  "David and Loren Teolis Remodel",
+  "Culver - Police Department Restroom Renovation Project PF-020",
+  "Camarillo - Wash Water Recovery Unit Cover Addition",
+  "Burbank - ACF Burbank Youth Center Solar Improvements",
+  "Randy Urista - General Remodel",
+  "City Hall Interior Renovation / Signal Hill",
+  "Adrienne Mitchell Park Restroom Addition",
+  "Anaheim Union HS District - Gilbert HS Sewer Line Repair",
+  "Mono County - Crowley Lake Park Sport Courts",
+  "Pomona - Water Resources Yard Onsite Utility",
+  "Riverside - Owned Parking Lot and Alley",
+  "Roof Replacement - Fire Station 36",
+  "San Bernardino - 19th St. Storm Drain Improvements",
+  "Santa Monica - Bodega Conversion",
+  "Santa Clarita - Meditation Garden",
+];
+
+const STATUSES = [
+  "Working Day",
+  "Not Started",
+  "On Hold",
+  "No Working Day",
+  "Holiday",
+  "Rain Day",
+  "Punch List",
+];
+
 interface FormData {
   date: string;
   projectName: string;
@@ -59,9 +98,7 @@ export default function ReportPage() {
   }, [router]);
 
   function handleChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
     const target = e.target;
     const value =
@@ -97,47 +134,30 @@ export default function ReportPage() {
     setError("");
 
     try {
-      // Upload pictures
       const pictureUrls: string[] = [];
       for (const pic of pictures) {
         const fd = new FormData();
         fd.append("file", pic);
-        fd.append("bucket", "photos");
-        const res = await fetch("/api/upload-photo", {
-          method: "POST",
-          body: fd,
-        });
+        const res = await fetch("/api/upload-photo", { method: "POST", body: fd });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Photo upload failed");
         pictureUrls.push(data.url);
       }
 
-      // Upload sign sheet
       let signSheetUrl = "";
       if (signSheet) {
         const fd = new FormData();
         fd.append("file", signSheet);
-        fd.append("bucket", "photos");
-        const res = await fetch("/api/upload-photo", {
-          method: "POST",
-          body: fd,
-        });
+        const res = await fetch("/api/upload-photo", { method: "POST", body: fd });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Sign sheet upload failed");
         signSheetUrl = data.url;
       }
 
-      // Submit report to Notion
       const res = await fetch("/api/submit-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          foremanName,
-          foremanEmail,
-          pictureUrls,
-          signSheetUrl,
-        }),
+        body: JSON.stringify({ ...form, foremanName, foremanEmail, pictureUrls, signSheetUrl }),
       });
 
       const data = await res.json();
@@ -155,183 +175,110 @@ export default function ReportPage() {
     router.push("/login");
   }
 
-  const inputClass =
-    "w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 text-base bg-white";
-  const labelClass = "block text-sm font-semibold text-gray-700 mb-1";
-  const sectionClass = "bg-white rounded-2xl p-5 shadow-sm space-y-4";
+  const inputClass = "w-full px-4 py-3 border border-gray-200 focus:outline-none focus:border-black text-gray-800 text-base bg-white transition-colors";
+  const labelClass = "block text-xs font-semibold text-gray-500 mb-1 tracking-widest uppercase";
+  const sectionClass = "bg-white border border-gray-100 p-5 space-y-4";
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-[#1e3a5f] text-white px-5 py-4 flex items-center justify-between sticky top-0 z-10">
+      <div className="bg-black text-white px-5 py-4 flex items-center justify-between sticky top-0 z-10">
         <div>
-          <h1 className="text-lg font-bold">Daily Report</h1>
-          <p className="text-blue-200 text-sm">{foremanName}</p>
+          <div className="text-xs tracking-[0.2em] text-white/50 uppercase">Estate Design & Construction</div>
+          <h1 className="text-base font-semibold tracking-wide">EDC Daily Report</h1>
         </div>
-        <button
-          onClick={handleLogout}
-          className="text-blue-200 text-sm hover:text-white"
-        >
-          Sign Out
-        </button>
+        <div className="text-right">
+          <div className="text-xs text-white/60">{foremanName}</div>
+          <button onClick={handleLogout} className="text-xs text-white/40 hover:text-white mt-0.5">
+            Sign Out
+          </button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="px-4 py-5 space-y-4 max-w-2xl mx-auto pb-32">
-        {/* Section: Basic Info */}
+
+        {/* Basic Info */}
         <div className={sectionClass}>
-          <h2 className="font-bold text-gray-800 text-base">Basic Information</h2>
+          <h2 className="font-semibold text-gray-800 text-sm tracking-widest uppercase">Basic Information</h2>
 
           <div>
             <label className={labelClass}>Date</label>
-            <input
-              type="date"
-              name="date"
-              value={form.date}
-              onChange={handleChange}
-              required
-              className={inputClass}
-            />
+            <input type="date" name="date" value={form.date} onChange={handleChange} required className={inputClass} />
           </div>
 
           <div>
             <label className={labelClass}>Project Name</label>
-            <input
-              type="text"
-              name="projectName"
-              value={form.projectName}
-              onChange={handleChange}
-              required
-              placeholder="Enter project name"
-              className={inputClass}
-            />
+            <select name="projectName" value={form.projectName} onChange={handleChange} required className={inputClass}>
+              <option value="">Select project...</option>
+              {PROJECTS.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
           </div>
 
           <div>
             <label className={labelClass}>Status</label>
-            <select
-              name="status"
-              value={form.status}
-              onChange={handleChange}
-              required
-              className={inputClass}
-            >
+            <select name="status" value={form.status} onChange={handleChange} required className={inputClass}>
               <option value="">Select status...</option>
-              <option value="In Progress">In Progress</option>
-              <option value="On Hold">On Hold</option>
-              <option value="Completed">Completed</option>
-              <option value="Delayed">Delayed</option>
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
             </select>
           </div>
 
           <div>
             <label className={labelClass}>Office</label>
-            <input
-              type="text"
-              name="office"
-              value={form.office}
-              onChange={handleChange}
-              placeholder="Office / Division"
-              className={inputClass}
-            />
+            <input type="text" name="office" value={form.office} onChange={handleChange} placeholder="Office / Division" className={inputClass} />
           </div>
         </div>
 
-        {/* Section: Activities */}
+        {/* Activities */}
         <div className={sectionClass}>
-          <h2 className="font-bold text-gray-800 text-base">Activities</h2>
+          <h2 className="font-semibold text-gray-800 text-sm tracking-widest uppercase">Activities</h2>
 
           <div>
             <label className={labelClass}>Activity</label>
-            <textarea
-              name="activity"
-              value={form.activity}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Describe today's activity..."
-              className={inputClass}
-            />
+            <textarea name="activity" value={form.activity} onChange={handleChange} rows={3} placeholder="Describe today's activity..." className={inputClass} />
           </div>
 
           <div>
             <label className={labelClass}>Activity on Site</label>
-            <textarea
-              name="activityOnSite"
-              value={form.activityOnSite}
-              onChange={handleChange}
-              rows={3}
-              placeholder="What was done on site today?"
-              className={inputClass}
-            />
+            <textarea name="activityOnSite" value={form.activityOnSite} onChange={handleChange} rows={3} placeholder="What was done on site today?" className={inputClass} />
           </div>
 
           <div>
             <label className={labelClass}>Tomorrow&apos;s Goal</label>
-            <textarea
-              name="tomorrowsGoal"
-              value={form.tomorrowsGoal}
-              onChange={handleChange}
-              rows={3}
-              placeholder="What is planned for tomorrow?"
-              className={inputClass}
-            />
+            <textarea name="tomorrowsGoal" value={form.tomorrowsGoal} onChange={handleChange} rows={3} placeholder="What is planned for tomorrow?" className={inputClass} />
           </div>
         </div>
 
-        {/* Section: Workers */}
+        {/* Workers */}
         <div className={sectionClass}>
-          <h2 className="font-bold text-gray-800 text-base">Workers</h2>
+          <h2 className="font-semibold text-gray-800 text-sm tracking-widest uppercase">Workers</h2>
 
           <div>
             <label className={labelClass}>Workers Names</label>
-            <textarea
-              name="workersNames"
-              value={form.workersNames}
-              onChange={handleChange}
-              rows={4}
-              placeholder="One worker per line:&#10;John Smith&#10;Mike Johnson"
-              className={inputClass}
-            />
+            <textarea name="workersNames" value={form.workersNames} onChange={handleChange} rows={4} placeholder="One worker per line: John Smith, Mike Johnson" className={inputClass} />
           </div>
 
           <div>
             <label className={labelClass}>Workers Hours</label>
-            <textarea
-              name="workersHours"
-              value={form.workersHours}
-              onChange={handleChange}
-              rows={4}
-              placeholder="One entry per line:&#10;John Smith — 8h&#10;Mike Johnson — 8h"
-              className={inputClass}
-            />
+            <textarea name="workersHours" value={form.workersHours} onChange={handleChange} rows={4} placeholder="One entry per line: John Smith — 8h" className={inputClass} />
           </div>
         </div>
 
-        {/* Section: Equipment & Notes */}
+        {/* Equipment & Notes */}
         <div className={sectionClass}>
-          <h2 className="font-bold text-gray-800 text-base">Equipment & Notes</h2>
+          <h2 className="font-semibold text-gray-800 text-sm tracking-widest uppercase">Equipment & Notes</h2>
 
           <div>
             <label className={labelClass}>Tools / Equipment Used</label>
-            <textarea
-              name="tools"
-              value={form.tools}
-              onChange={handleChange}
-              rows={3}
-              placeholder="List tools and equipment used today..."
-              className={inputClass}
-            />
+            <textarea name="tools" value={form.tools} onChange={handleChange} rows={3} placeholder="List tools and equipment used today..." className={inputClass} />
           </div>
 
           <div>
             <label className={labelClass}>Unforeseen Events</label>
-            <textarea
-              name="unforeseen"
-              value={form.unforeseen}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Any unexpected issues or delays?"
-              className={inputClass}
-            />
+            <textarea name="unforeseen" value={form.unforeseen} onChange={handleChange} rows={3} placeholder="Any unexpected issues or delays?" className={inputClass} />
           </div>
 
           <div className="flex items-center gap-3 py-1">
@@ -341,50 +288,38 @@ export default function ReportPage() {
               id="safetyMeeting"
               checked={form.safetyMeeting}
               onChange={handleChange}
-              className="w-5 h-5 rounded accent-blue-600"
+              className="w-5 h-5 accent-black"
             />
-            <label htmlFor="safetyMeeting" className="font-semibold text-gray-700">
+            <label htmlFor="safetyMeeting" className="font-semibold text-gray-700 text-sm">
               Safety Meeting held today
             </label>
           </div>
         </div>
 
-        {/* Section: Photos */}
+        {/* Photos */}
         <div className={sectionClass}>
-          <h2 className="font-bold text-gray-800 text-base">Photos</h2>
+          <h2 className="font-semibold text-gray-800 text-sm tracking-widest uppercase">Photos</h2>
 
           <div>
             <label className={labelClass}>Site Pictures</label>
             <button
               type="button"
               onClick={() => picturesRef.current?.click()}
-              className="w-full py-3 border-2 border-dashed border-blue-300 rounded-xl text-blue-600 font-medium hover:bg-blue-50 transition-colors"
+              className="w-full py-3 border-2 border-dashed border-gray-300 text-gray-500 font-medium hover:border-black hover:text-black transition-colors text-sm"
             >
               + Add Photos
             </button>
-            <input
-              ref={picturesRef}
-              type="file"
-              accept="image/*"
-              multiple
-              capture="environment"
-              onChange={handlePicturesChange}
-              className="hidden"
-            />
+            <input ref={picturesRef} type="file" accept="image/*" multiple capture="environment" onChange={handlePicturesChange} className="hidden" />
             {picturesPreviews.length > 0 && (
               <div className="grid grid-cols-3 gap-2 mt-3">
                 {picturesPreviews.map((src, i) => (
                   <div key={i} className="relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={src}
-                      alt={`Photo ${i + 1}`}
-                      className="w-full h-24 object-cover rounded-lg"
-                    />
+                    <img src={src} alt={`Photo ${i + 1}`} className="w-full h-24 object-cover" />
                     <button
                       type="button"
                       onClick={() => removePicture(i)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                      className="absolute top-1 right-1 bg-black text-white w-5 h-5 flex items-center justify-center text-xs"
                     >
                       ×
                     </button>
@@ -399,33 +334,22 @@ export default function ReportPage() {
             <button
               type="button"
               onClick={() => signSheetRef.current?.click()}
-              className="w-full py-3 border-2 border-dashed border-orange-300 rounded-xl text-orange-600 font-medium hover:bg-orange-50 transition-colors"
+              className="w-full py-3 border-2 border-dashed border-gray-300 text-gray-500 font-medium hover:border-black hover:text-black transition-colors text-sm"
             >
               {signSheetPreview ? "Replace Sign Sheet Photo" : "+ Take Photo of Sign Sheet"}
             </button>
-            <input
-              ref={signSheetRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleSignSheetChange}
-              className="hidden"
-            />
+            <input ref={signSheetRef} type="file" accept="image/*" capture="environment" onChange={handleSignSheetChange} className="hidden" />
             {signSheetPreview && (
               <div className="mt-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={signSheetPreview}
-                  alt="Sign sheet"
-                  className="w-full rounded-lg"
-                />
+                <img src={signSheetPreview} alt="Sign sheet" className="w-full" />
               </div>
             )}
           </div>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm">
+          <div className="border border-red-300 text-red-700 px-4 py-3 text-sm">
             {error}
           </div>
         )}
@@ -435,7 +359,7 @@ export default function ReportPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-4 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-bold rounded-xl text-lg transition-colors"
+            className="w-full py-4 bg-black hover:bg-gray-900 disabled:bg-gray-400 text-white font-semibold tracking-widest uppercase text-sm transition-colors"
           >
             {submitting ? "Submitting Report..." : "Submit Daily Report"}
           </button>
